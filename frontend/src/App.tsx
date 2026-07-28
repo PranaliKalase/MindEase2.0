@@ -1,11 +1,7 @@
+import { LandingPage } from './pages/Landing/LandingPage';
+
 function App() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-black">
-      <h1 className="text-5xl font-bold text-cyan-400">
-        MindEase 🚀
-      </h1>
-    </div>
-  );
+  return <LandingPage />;
 }
 
 export default App;
