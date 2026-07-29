@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, Sparkles } from 'lucide-react';
+import { usePageTransition } from '../../routes';
 
 interface NavbarProps {
   fadeIn: boolean;
@@ -8,6 +9,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ fadeIn }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { navigateToAuth } = usePageTransition();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -74,10 +76,13 @@ export const Navbar: React.FC<NavbarProps> = ({ fadeIn }) => {
 
           {/* CTA Button & Mobile Toggle */}
           <div className="flex items-center gap-4">
-            <a href="#features" className="hidden sm:inline-flex btn-primary text-sm py-2.5 px-6">
+            <button
+              onClick={() => navigateToAuth('login')}
+              className="hidden sm:inline-flex btn-primary text-sm py-2.5 px-6 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#8A5CFF]"
+            >
               <Sparkles className="w-4 h-4 text-[#F5A5D5]" />
               <span>Get Started</span>
-            </a>
+            </button>
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -103,13 +108,15 @@ export const Navbar: React.FC<NavbarProps> = ({ fadeIn }) => {
               {link.name}
             </a>
           ))}
-          <a
-            href="#features"
-            onClick={() => setMobileMenuOpen(false)}
-            className="btn-primary w-full text-center mt-2"
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              navigateToAuth('login');
+            }}
+            className="btn-primary w-full text-center mt-2 cursor-pointer"
           >
             Get Started
-          </a>
+          </button>
         </div>
       )}
     </header>

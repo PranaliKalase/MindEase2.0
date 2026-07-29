@@ -1,11 +1,14 @@
 import React from 'react';
 import { Sparkles, ArrowRight, ShieldCheck, Heart, Moon } from 'lucide-react';
+import { usePageTransition } from '../../routes';
 
 interface HeroSectionProps {
   fadeIn: boolean;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ fadeIn }) => {
+  const { navigateToAuth } = usePageTransition();
+
   return (
     <section id="hero" className="relative min-h-screen flex items-center justify-center pt-24 pb-16 overflow-hidden">
       {/* Background Hero Video */}
@@ -18,7 +21,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ fadeIn }) => {
           src="/assets/videos/hero-bg.mp4"
           className="w-full h-full object-cover transform scale-105"
         />
-        {/* Subtle Dark Gradient Overlay - Preserves video's cinematic quality while assuring crystal readability */}
+        {/* Subtle Dark Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#0B1026]/75 via-[#0B1026]/40 to-[#0B1026]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-[#0B1026]/30 to-[#0B1026]" />
       </div>
@@ -51,10 +54,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ fadeIn }) => {
 
           {/* Call to Action Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-16">
-            <a href="#features" className="btn-primary text-base px-8 py-4 w-full sm:w-auto group">
+            <button
+              onClick={() => navigateToAuth('login')}
+              className="btn-primary text-base px-8 py-4 w-full sm:w-auto group cursor-pointer focus-visible:ring-2 focus-visible:ring-[#8A5CFF]"
+            >
               <span>Start Your Journey</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </a>
+            </button>
             <a href="#how-it-works" className="btn-secondary text-base px-8 py-4 w-full sm:w-auto">
               <span>Learn More</span>
             </a>
