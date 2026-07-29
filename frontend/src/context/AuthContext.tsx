@@ -54,11 +54,37 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     // Listen to real-time auth changes (sign in, sign out, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      async (_event, session) => {
         if (isMounted) {
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
+        }
+
+        // Handle profile creation/verification for new users (e.g. after Google OAuth redirect)
+        if (session?.user && (_event === 'SIGNED_IN' || _event === 'INITIAL_SESSION')) {
+          try {
+            const fullName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || '';
+            const avatarUrl = session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || '';
+
+            // Using upsert with 'id' as the conflict key ensures we don't create duplicates
+            // We only insert if they don't exist (or update if you want to keep them in sync)
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .upsert({
+                id: session.user.id,
+                full_name: fullName,
+                email: session.user.email,
+                avatar_url: avatarUrl,
+                created_at: session.user.created_at || new Date().toISOString(),
+              }, { onConflict: 'id', ignoreDuplicates: true });
+
+            if (profileError) {
+              console.error('Error verifying/creating profile on sign in:', profileError);
+            }
+          } catch (err) {
+            console.error('Failed to create profile during auth state change:', err);
+          }
         }
       }
     );

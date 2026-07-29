@@ -112,21 +112,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'login' }) =
 
   const handleGoogleSignIn = async () => {
     setErrorMessage(null);
-    setSuccessMessage('Connecting to Google Auth...');
+    setIsLoading(true);
     try {
       const res = await googleLogin();
-      if (res?.user) {
-        setSuccessMessage('Welcome! Authenticated via Google. Entering your Sanctuary...');
-        setTimeout(() => navigate('/dashboard'), 800);
-      } else if (res?.error) {
-        setSuccessMessage('Welcome! Authenticated via Google. Entering your Sanctuary...');
-        setTimeout(() => navigate('/dashboard'), 800);
-      } else {
-        setTimeout(() => navigate('/dashboard'), 1000);
+      if (res?.error) {
+        setErrorMessage(res.error.message || 'Failed to initialize Google login.');
+        setIsLoading(false);
       }
+      // Note: On success, Supabase instantly redirects the browser to the OAuth provider,
+      // so no manual navigation or success message is needed here.
     } catch (err: any) {
-      setSuccessMessage('Welcome! Authenticated via Google. Entering your Sanctuary...');
-      setTimeout(() => navigate('/dashboard'), 800);
+      setErrorMessage(err.message || 'An unexpected error occurred during Google login.');
+      setIsLoading(false);
     }
   };
 
@@ -431,11 +428,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'login' }) =
             </div>
 
             {/* Social Logins */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2">
               <button
                 type="button"
                 onClick={handleGoogleSignIn}
-                className="glass-button-social py-1.5 px-3 text-xs"
+                className="glass-button-social py-1.5 px-3 text-xs w-full flex items-center justify-center gap-2"
               >
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
                   <path
@@ -455,18 +452,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'login' }) =
                     d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16c1.8 3.7 5.6 7 10.1 7z"
                   />
                 </svg>
-                <span>Google</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleGitHubSignIn}
-                className="glass-button-social py-1.5 px-3 text-xs"
-              >
-                <svg className="w-3.5 h-3.5 fill-current text-white" viewBox="0 0 24 24">
-                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-                </svg>
-                <span>GitHub</span>
+                <span>Continue with Google</span>
               </button>
             </div>
 

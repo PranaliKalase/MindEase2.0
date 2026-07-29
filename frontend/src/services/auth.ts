@@ -25,7 +25,7 @@ export const formatAuthError = (error: AuthError | Error | null): string => {
     return 'Password must be at least 6 characters long.';
   }
   if (msg.includes('email not confirmed')) {
-    return 'Please verify your email address before signing in.';
+    return 'Please verify your email address. If testing locally, you can disable "Confirm email" in your Supabase Auth settings.';
   }
   if (msg.includes('failed to fetch') || msg.includes('networkerror') || msg.includes('network error')) {
     if (!isSupabaseConfigured()) {
@@ -114,6 +114,26 @@ export const signUpWithEmail = async (
 
     if (error) {
       return { user: null, session: null, error, message: formatAuthError(error) };
+    }
+
+    // After successful signup, insert the user into the profiles table
+    if (data.user) {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert([
+          {
+            id: data.user.id,
+            full_name: fullName.trim(),
+            email: email.trim(),
+            created_at: new Date().toISOString(),
+          }
+        ]);
+
+      if (profileError) {
+        console.error('Error creating profile:', profileError);
+        // Note: we do not fail the whole signup if profile creation fails, 
+        // but in a production app you'd want to handle this robustly or use a Postgres Trigger.
+      }
     }
 
     const needsEmailConfirmation = data.user && !data.session;
