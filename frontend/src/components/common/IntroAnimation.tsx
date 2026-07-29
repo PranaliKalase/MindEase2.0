@@ -32,7 +32,7 @@ export const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) =>
     if (isFading) return;
     setIsFading(true);
     sessionStorage.setItem('mindease_intro_played', 'true');
-    
+
     // Notify parent immediately so underlying Hero video starts fading in content concurrently
     onComplete();
 
@@ -46,14 +46,13 @@ export const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) =>
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-[#0B1026] transition-opacity duration-1200 ease-out pointer-events-auto ${
-        isFading ? 'opacity-0 pointer-events-none' : 'opacity-100'
-      }`}
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-[#0B1026] transition-opacity duration-1200 ease-out pointer-events-auto ${isFading ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
       style={{ willChange: 'opacity' }}
     >
       <video
         ref={videoRef}
-        src="/assets/videos/intro-anim.mp4"
+        src="\assets\videos\introanimation.mp4"
         autoPlay
         muted
         playsInline
