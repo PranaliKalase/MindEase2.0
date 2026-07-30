@@ -52,14 +52,17 @@ export const AppRoutes: React.FC = () => {
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             
             {/* Protected Sanctuary Routes */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <DashboardPage />
-                </ProtectedRoute>
-              }
-            />
+            {['/dashboard', '/journal', '/letters', '/relief', '/gratitude', '/community', '/clubs', '/analytics', '/profile', '/settings'].map((path) => (
+              <Route
+                key={path}
+                path={path}
+                element={
+                  <ProtectedRoute>
+                    <DashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+            ))}
 
             {/* Catch-all fallback */}
             <Route path="*" element={<LandingPage />} />
