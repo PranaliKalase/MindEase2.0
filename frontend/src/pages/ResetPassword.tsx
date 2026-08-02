@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Eye, EyeOff, Sparkles, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { ParticleCanvas } from '../components/common/ParticleCanvas';
-import { updateUserPassword, formatAuthError } from '../services/auth';
+import { updateUserPassword, formatAuthError, validatePassword } from '../services/auth';
 
 export const ResetPasswordPage: React.FC = () => {
   const navigate = useNavigate();
@@ -18,8 +18,9 @@ export const ResetPasswordPage: React.FC = () => {
     setErrorMessage(null);
     setSuccessMessage(null);
 
-    if (!password || password.length < 6) {
-      setErrorMessage('Password must be at least 6 characters.');
+    const pwdErr = validatePassword(password);
+    if (pwdErr) {
+      setErrorMessage(pwdErr);
       return;
     }
 

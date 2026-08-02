@@ -21,7 +21,7 @@ interface LoginPageProps {
 
 export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'login' }) => {
   const navigate = useNavigate();
-  const { signIn, signUp, googleLogin, githubLogin, resetPassword } = useAuth();
+  const { signIn, signUp, googleLogin, resetPassword } = useAuth();
   const [isSignUp, setIsSignUp] = useState<boolean>(initialMode === 'signup');
 
   // Form State
@@ -49,6 +49,22 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'login' }) =
     setSuccessMessage(null);
   };
 
+  const validatePasswordRules = (pwd: string): string | null => {
+    if (!pwd || pwd.length < 8) {
+      return 'Password must be at least 8 characters long.';
+    }
+    if (!/[A-Z]/.test(pwd)) {
+      return 'Password must contain at least one uppercase letter (A-Z).';
+    }
+    if (!/[a-z]/.test(pwd)) {
+      return 'Password must contain at least one lowercase letter (a-z).';
+    }
+    if (!/[0-9]/.test(pwd)) {
+      return 'Password must contain at least one number (0-9).';
+    }
+    return null;
+  };
+
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -59,10 +75,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'login' }) =
       setErrorMessage('Please enter a valid email address.');
       return;
     }
-    if (!password || password.length < 6) {
-      setErrorMessage('Password must be at least 6 characters.');
+
+    const pwdErr = validatePasswordRules(password);
+    if (pwdErr) {
+      setErrorMessage(pwdErr);
       return;
     }
+
     if (isSignUp) {
       if (!fullName.trim()) {
         setErrorMessage('Please enter your full name.');
@@ -87,9 +106,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'login' }) =
           setSuccessMessage(
             res.message || 'Account created! Entering your MindEase Sanctuary...'
           );
-          setTimeout(() => {
-            navigate('/dashboard');
-          }, 1000);
+          if (res.session || !res.message?.includes('verify')) {
+            setTimeout(() => {
+              navigate('/dashboard');
+            }, 1000);
+          }
         }
       } else {
         const res = await signIn(email, password);
@@ -124,26 +145,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'login' }) =
     } catch (err: any) {
       setErrorMessage(err.message || 'An unexpected error occurred during Google login.');
       setIsLoading(false);
-    }
-  };
-
-  const handleGitHubSignIn = async () => {
-    setErrorMessage(null);
-    setSuccessMessage('Connecting to GitHub Auth...');
-    try {
-      const res = await githubLogin();
-      if (res?.user) {
-        setSuccessMessage('Welcome! Authenticated via GitHub. Entering your Sanctuary...');
-        setTimeout(() => navigate('/dashboard'), 800);
-      } else if (res?.error) {
-        setSuccessMessage('Welcome! Authenticated via GitHub. Entering your Sanctuary...');
-        setTimeout(() => navigate('/dashboard'), 800);
-      } else {
-        setTimeout(() => navigate('/dashboard'), 1000);
-      }
-    } catch (err: any) {
-      setSuccessMessage('Welcome! Authenticated via GitHub. Entering your Sanctuary...');
-      setTimeout(() => navigate('/dashboard'), 800);
     }
   };
 

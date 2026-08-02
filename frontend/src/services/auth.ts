@@ -9,6 +9,29 @@ export interface AuthResponse {
 }
 
 /**
+ * Validate password requirements:
+ * - Minimum 8 characters
+ * - One uppercase
+ * - One lowercase
+ * - One number
+ */
+export const validatePassword = (password: string): string | null => {
+  if (!password || password.length < 8) {
+    return 'Password must be at least 8 characters long.';
+  }
+  if (!/[A-Z]/.test(password)) {
+    return 'Password must contain at least one uppercase letter.';
+  }
+  if (!/[a-z]/.test(password)) {
+    return 'Password must contain at least one lowercase letter.';
+  }
+  if (!/[0-9]/.test(password)) {
+    return 'Password must contain at least one number.';
+  }
+  return null;
+};
+
+/**
  * Format raw Supabase auth error into friendly user-facing messages
  */
 export const formatAuthError = (error: AuthError | Error | null): string => {
@@ -16,28 +39,28 @@ export const formatAuthError = (error: AuthError | Error | null): string => {
   const msg = error.message.toLowerCase();
 
   if (msg.includes('invalid login credentials') || msg.includes('invalid_credentials')) {
-    return 'Invalid email or password. Please try again.';
+    return 'Invalid email or password. Please check your credentials and try again.';
   }
   if (msg.includes('user already registered') || msg.includes('already registered')) {
     return 'An account with this email already exists. Please sign in instead.';
   }
   if (msg.includes('password should be at least')) {
-    return 'Password must be at least 6 characters long.';
+    return 'Password must be at least 8 characters long with uppercase, lowercase, and numbers.';
   }
   if (msg.includes('email not confirmed')) {
-    return 'Please verify your email address. If testing locally, you can disable "Confirm email" in your Supabase Auth settings.';
+    return 'Please verify your email address before logging in.';
   }
   if (msg.includes('failed to fetch') || msg.includes('networkerror') || msg.includes('network error')) {
     if (!isSupabaseConfigured()) {
       return 'Supabase URL & Anon Key required. Please configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in frontend/.env.';
     }
-    return 'Network connection error. Please check your internet connection and Supabase URL.';
+    return 'Network connection error. Please check your internet connection and try again.';
   }
   return error.message || 'An unexpected authentication error occurred. Please try again.';
 };
 
 /**
- * Helper to generate mock user for local demo testing when credentials are not yet added
+ * Helper to generate mock user for local demo testing when credentials are not configured
  */
 const createMockUser = (email: string, fullName?: string): { user: User; session: Session } => {
   const mockUser = {
@@ -68,7 +91,6 @@ const createMockUser = (email: string, fullName?: string): { user: User; session
  */
 export const signInWithEmail = async (email: string, password: string): Promise<AuthResponse> => {
   if (!isSupabaseConfigured()) {
-    // If Supabase credentials are placeholder strings in .env, fallback gracefully to demo authentication
     const { user, session } = createMockUser(email);
     return { user, session, error: null };
   }
@@ -88,13 +110,19 @@ export const signInWithEmail = async (email: string, password: string): Promise<
 };
 
 /**
- * Email & Password Sign Up with Full Name in metadata
+ * Email & Password Sign Up with Full Name validation & metadata
  */
 export const signUpWithEmail = async (
   email: string,
   password: string,
   fullName: string
 ): Promise<AuthResponse> => {
+  // Validate Password rules
+  const pwdErr = validatePassword(password);
+  if (pwdErr) {
+    return { user: null, session: null, error: new Error(pwdErr), message: pwdErr };
+  }
+
   if (!isSupabaseConfigured()) {
     const { user, session } = createMockUser(email, fullName);
     return { user, session, error: null, message: 'Account created successfully! (Demo Mode)' };
@@ -116,23 +144,22 @@ export const signUpWithEmail = async (
       return { user: null, session: null, error, message: formatAuthError(error) };
     }
 
-    // After successful signup, insert the user into the profiles table
+    // Insert user into profiles table
     if (data.user) {
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert([
+        .upsert([
           {
             id: data.user.id,
             full_name: fullName.trim(),
             email: email.trim(),
+            avatar: '',
             created_at: new Date().toISOString(),
           }
-        ]);
+        ], { onConflict: 'id', ignoreDuplicates: true });
 
       if (profileError) {
-        console.error('Error creating profile:', profileError);
-        // Note: we do not fail the whole signup if profile creation fails, 
-        // but in a production app you'd want to handle this robustly or use a Postgres Trigger.
+        console.error('Error creating profile row:', profileError);
       }
     }
 
@@ -142,7 +169,7 @@ export const signUpWithEmail = async (
       session: data.session,
       error: null,
       message: needsEmailConfirmation
-        ? 'Account created! Please check your email to verify your account before signing in.'
+        ? 'Please verify your email.'
         : 'Account created successfully!',
     };
   } catch (err: any) {
@@ -167,40 +194,11 @@ export const signInWithGoogle = async (): Promise<AuthResponse> => {
       },
     });
     if (error) {
-      const { user, session } = createMockUser('google.user@mindease.com', 'Google User');
-      return { user, session, error: null, message: 'Authenticated with Google!' };
+      return { user: null, session: null, error, message: formatAuthError(error) };
     }
     return { user: null, session: null, error: null };
   } catch (err: any) {
-    const { user, session } = createMockUser('google.user@mindease.com', 'Google User');
-    return { user, session, error: null, message: 'Authenticated with Google!' };
-  }
-};
-
-/**
- * GitHub OAuth Login
- */
-export const signInWithGitHub = async (): Promise<AuthResponse> => {
-  if (!isSupabaseConfigured()) {
-    const { user, session } = createMockUser('github.user@mindease.com', 'GitHub User');
-    return { user, session, error: null };
-  }
-
-  try {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'github',
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`,
-      },
-    });
-    if (error) {
-      const { user, session } = createMockUser('github.user@mindease.com', 'GitHub User');
-      return { user, session, error: null, message: 'Authenticated with GitHub!' };
-    }
-    return { user: null, session: null, error: null };
-  } catch (err: any) {
-    const { user, session } = createMockUser('github.user@mindease.com', 'GitHub User');
-    return { user, session, error: null, message: 'Authenticated with GitHub!' };
+    return { user: null, session: null, error: err, message: formatAuthError(err) };
   }
 };
 
@@ -213,7 +211,7 @@ export const sendPasswordReset = async (email: string): Promise<AuthResponse> =>
       user: null,
       session: null,
       error: null,
-      message: 'Password reset link sent! Please check your inbox.',
+      message: 'Password reset email sent! Please check your inbox.',
     };
   }
 
@@ -228,7 +226,7 @@ export const sendPasswordReset = async (email: string): Promise<AuthResponse> =>
       user: null,
       session: null,
       error: null,
-      message: 'Password reset link sent! Please check your inbox.',
+      message: 'Password reset email sent! Please check your inbox.',
     };
   } catch (err: any) {
     return { user: null, session: null, error: err, message: formatAuthError(err) };
@@ -236,9 +234,14 @@ export const sendPasswordReset = async (email: string): Promise<AuthResponse> =>
 };
 
 /**
- * Update Password for Authenticated User (Password Reset flow)
+ * Update Password for Authenticated User
  */
 export const updateUserPassword = async (newPassword: string): Promise<AuthResponse> => {
+  const pwdErr = validatePassword(newPassword);
+  if (pwdErr) {
+    return { user: null, session: null, error: new Error(pwdErr), message: pwdErr };
+  }
+
   if (!isSupabaseConfigured()) {
     return {
       user: null,
@@ -282,10 +285,17 @@ export const signOutUser = async (): Promise<{ error: Error | null }> => {
 };
 
 /**
- * Retrieve active session
+ * Update User Profile row in profiles table
  */
-export const getActiveSession = async (): Promise<Session | null> => {
-  if (!isSupabaseConfigured()) return null;
-  const { data } = await supabase.auth.getSession();
-  return data.session;
+export const updateUserProfileRow = async (userId: string, data: { full_name?: string; avatar?: string }): Promise<{ error: Error | null }> => {
+  if (!isSupabaseConfigured()) return { error: null };
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update(data)
+      .eq('id', userId);
+    return { error };
+  } catch (err: any) {
+    return { error: err };
+  }
 };
