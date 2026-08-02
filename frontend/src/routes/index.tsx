@@ -25,14 +25,7 @@ export const AppRoutes: React.FC = () => {
   const [isTransitioning, setIsTransitioning] = React.useState(false);
 
   const navigateToAuth = (mode: 'login' | 'signup' = 'login') => {
-    setIsTransitioning(true);
-    // Smooth cinematic transition delay
-    setTimeout(() => {
-      navigate(mode === 'signup' ? '/register' : '/login');
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 100);
-    }, 450);
+    navigate(mode === 'signup' ? '/register' : '/login');
   };
 
   return (
