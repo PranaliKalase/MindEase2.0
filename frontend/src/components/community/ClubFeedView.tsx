@@ -110,7 +110,7 @@ export const ClubFeedView: React.FC<ClubFeedViewProps> = ({
   };
 
   const details = getClubDetails();
-  const filteredPosts = posts.filter((p) => p.clubId === clubId || posts.length < 3);
+  const filteredPosts = posts.filter((p) => p.clubId === clubId);
 
   return (
     <div className="space-y-6 animate-fadeIn">

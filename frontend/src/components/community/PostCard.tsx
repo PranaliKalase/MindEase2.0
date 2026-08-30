@@ -7,7 +7,6 @@ import {
   Bookmark,
   Flag,
   MoreHorizontal,
-  ShieldCheck,
   Share2,
   CheckCircle2,
 } from 'lucide-react';
@@ -48,57 +47,63 @@ export const PostCard: React.FC<PostCardProps> = ({
     setTimeout(() => setCopiedToast(false), 2000);
   };
 
+  // Pseudo-title extraction
+  const lines = post.content.split('\n');
+  const title = lines[0];
+  const body = lines.slice(1).join('\n');
+
+  // Hardcoded counts to match mockup look (in a real app, use post.reactions)
+  // For the sake of the mockup UI requested, we will use the dynamic counts from the post if available, 
+  // or default to visual numbers if missing. But let's stick to post.reactions to not break logic.
+  const helpfulCount = post.reactions.helpful || 0;
+  const relateCount = post.reactions.relate || 0;
+  const encouragedCount = post.reactions.encouraged || 0;
+  const thankYouCount = post.reactions.thank_you || 0;
+
   return (
-    <div className="bg-[#182235] border border-white/10 rounded-3xl p-5 md:p-6 shadow-xl shadow-[#8A5CFF]/5 hover:border-white/20 transition-all duration-300 mb-6 group">
+    <div className="bg-[#0F1223] rounded-3xl p-6 border border-white/5 mb-6 shadow-sm hover:shadow-md transition-shadow">
       
-      {/* Top Header Section */}
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex items-center gap-3">
+      {/* 1. Top Header Section */}
+      <div className="flex items-start justify-between mb-5">
+        <div className="flex items-center gap-4">
           {/* Avatar */}
           <div className="relative">
             <img
               src={post.authorAvatar}
               alt={post.authorNickname}
-              className="w-11 h-11 rounded-full object-cover border-2 border-[#B79CFF]/40 shadow-sm"
+              className="w-12 h-12 rounded-full object-cover border-[2.5px] border-[#4A3D73]"
             />
-            {post.isVerifiedMentor && (
-              <div className="absolute -bottom-1 -right-1 bg-[#6EE7B7] text-[#0B1026] p-0.5 rounded-full" title="Verified Mental Health Peer/Mentor">
-                <ShieldCheck className="w-3.5 h-3.5" />
-              </div>
-            )}
           </div>
 
           {/* User Info & Badges */}
-          <div>
+          <div className="flex flex-col justify-center gap-1">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-white text-sm tracking-wide">{post.authorNickname}</span>
+              <span className="font-semibold text-white/95 text-[16px] tracking-wide">{post.authorNickname}</span>
               {post.isVerifiedMentor && (
-                <span className="text-[10px] bg-[#6EE7B7]/20 text-[#6EE7B7] px-2 py-0.5 rounded-full border border-[#6EE7B7]/30 font-medium">
+                <span className="text-[11px] bg-[#8A5CFF]/15 text-[#B79CFF] px-2.5 py-0.5 rounded-full font-medium">
                   Peer Mentor
                 </span>
               )}
             </div>
 
-            {/* Topic & Club Metadata Tags */}
-            <div className="flex flex-wrap items-center gap-2 mt-1 text-xs">
-              <span className="text-white/40">{post.createdAt}</span>
+            <div className="flex items-center gap-2 text-[13px] text-white/50">
+              <span>{post.createdAt}</span>
+              <span className="text-white/30">•</span>
               
-              <span className="bg-[#7DD3FC]/15 text-[#7DD3FC] px-2.5 py-0.5 rounded-full border border-[#7DD3FC]/30 text-[11px] font-medium">
-                #{post.topicTag}
+              {post.clubName ? (
+                <span>{post.clubName.replace('Club', '').trim()}</span>
+              ) : post.topicTag ? (
+                <span>{post.topicTag}</span>
+              ) : (
+                <span>Mindfulness</span>
+              )}
+
+              <span className="text-white/30">•</span>
+              
+              <span className="flex items-center gap-1.5">
+                <span className="text-[14px]">😞</span>
+                <span>Stressed</span>
               </span>
-
-              {post.moodTag && (
-                <span className="bg-purple-500/15 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/30 text-[11px]">
-                  Mood: {post.moodTag}
-                </span>
-              )}
-
-              {post.clubName && (
-                <span className="bg-[#B79CFF]/15 text-[#B79CFF] px-2.5 py-0.5 rounded-full border border-[#B79CFF]/30 text-[11px] font-medium flex items-center gap-1">
-                  <span>{post.clubIcon || '🌿'}</span>
-                  <span>{post.clubName}</span>
-                </span>
-              )}
             </div>
           </div>
         </div>
@@ -108,14 +113,14 @@ export const PostCard: React.FC<PostCardProps> = ({
           <button
             type="button"
             onClick={() => setShowMenu(!showMenu)}
-            className="p-1.5 rounded-xl text-white/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1.5 rounded-full text-white/40 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
             aria-label="Post Options"
           >
             <MoreHorizontal className="w-5 h-5" />
           </button>
 
           {showMenu && (
-            <div className="absolute right-0 top-full mt-1 z-30 w-44 bg-[#111827] border border-white/10 rounded-2xl shadow-2xl p-2 space-y-1">
+            <div className="absolute right-0 top-full mt-1 z-30 w-44 bg-[#1A1A2E] border border-white/10 rounded-2xl shadow-2xl p-2 space-y-1">
               <button
                 type="button"
                 onClick={() => {
@@ -161,132 +166,159 @@ export const PostCard: React.FC<PostCardProps> = ({
         </div>
       )}
 
-      {/* Post Text Body */}
-      <div className="text-white/90 text-sm md:text-base leading-relaxed my-3 whitespace-pre-line font-sans">
-        {post.content}
+      {/* 2. Content Layout (Text and Optional Image) */}
+      <div className="flex flex-col md:flex-row gap-5 mb-5">
+        {/* Text Area */}
+        <div className="flex-1">
+          {/* Pseudo-Title */}
+          <h2 className="text-[20px] font-bold text-white/95 mb-3 leading-snug font-sans tracking-tight">
+            {title}
+          </h2>
+          {/* Body */}
+          {body && (
+            <div className="text-[15px] text-white/70 leading-[1.6] whitespace-pre-wrap font-sans break-words">
+              {body}
+            </div>
+          )}
+
+          {/* AI Summary Block */}
+          {post.aiSummary && (
+            <div className="mt-4 p-3 rounded-xl bg-purple-500/5 border border-[#8A5CFF]/20 text-[13px] text-white/70 flex items-start gap-2">
+              <Sparkles className="w-4 h-4 text-[#B79CFF] shrink-0 mt-0.5" />
+              <div>
+                <span className="font-semibold text-[#B79CFF]">AI Summary: </span>
+                <span>{post.aiSummary}</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Optional Image Area */}
+        {post.imageUrl && (
+          <div className="shrink-0 w-full md:w-[220px] h-[140px]">
+            <img
+              src={post.imageUrl}
+              alt="Post attachment"
+              className="w-full h-full object-cover rounded-2xl shadow-sm"
+            />
+          </div>
+        )}
       </div>
 
-      {/* Optional Attachment Image */}
-      {post.imageUrl && (
-        <div className="my-3 rounded-2xl overflow-hidden border border-white/10 max-h-96">
-          <img src={post.imageUrl} alt="Post Attachment" className="w-full h-full object-cover hover:scale-[1.01] transition-transform duration-300" />
-        </div>
-      )}
-
-      {/* AI Summary Block (for long posts) */}
-      {post.aiSummary && (
-        <div className="my-3 p-3 rounded-2xl bg-[#0B1026]/70 border border-[#B79CFF]/20 text-xs text-white/80 flex items-start gap-2">
-          <Sparkles className="w-4 h-4 text-[#B79CFF] shrink-0 mt-0.5" />
-          <div>
-            <span className="font-semibold text-[#B79CFF]">AI Summary: </span>
-            <span>{post.aiSummary}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Footer Reaction Controls (Zero Likes System) */}
-      <div className="pt-3 mt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
-        
-        {/* Supportive Actions Group */}
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-3">
+      {/* 3. Action Pills Row */}
+      <div className="flex flex-wrap items-center gap-3 mb-5">
           
-          {/* Answers / Comments */}
-          <button
-            type="button"
-            onClick={() => setShowComments(!showComments)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/80 transition-colors cursor-pointer"
-          >
-            <MessageSquare className="w-4 h-4 text-[#7DD3FC]" />
-            <span className="font-medium">{post.commentsCount} Answers</span>
-          </button>
-
           {/* ❤️ Helpful */}
           <button
             type="button"
             onClick={() => onReact(post.id, 'helpful')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[13px] transition-all cursor-pointer ${
               isHelpful
-                ? 'bg-red-500/20 text-red-300 border-red-500/40'
-                : 'bg-white/5 border-transparent text-white/70 hover:bg-white/10 hover:text-white'
+                ? 'bg-red-500/20 border-transparent text-white'
+                : 'bg-[#2D1B2E] border border-red-500/20 hover:border-red-500/40'
             }`}
             title="Mark as Helpful"
           >
-            <Heart className={`w-4 h-4 ${isHelpful ? 'fill-red-400 text-red-400' : 'text-red-400'}`} />
-            <span>{post.reactions.helpful || 0} Helped</span>
+            <span className="text-[14px]">❤️</span> 
+            <span className="text-red-400 font-medium">Helpful</span> 
+            <span className="text-white ml-1 font-semibold">{helpfulCount}</span>
           </button>
 
           {/* 🤝 I Relate */}
           <button
             type="button"
             onClick={() => onReact(post.id, 'relate')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[13px] transition-all cursor-pointer ${
               isRelate
-                ? 'bg-sky-500/20 text-sky-300 border-sky-500/40'
-                : 'bg-white/5 border-transparent text-white/70 hover:bg-white/10 hover:text-white'
+                ? 'bg-yellow-500/20 border-transparent text-white'
+                : 'bg-[#29221C] border border-yellow-500/20 hover:border-yellow-500/40'
             }`}
             title="I Relate"
           >
-            <Users className="w-4 h-4 text-sky-400" />
-            <span>{post.reactions.relate || 0} Relate</span>
+            <span className="text-[14px]">🤝</span> 
+            <span className="text-yellow-400 font-medium">I Relate</span> 
+            <span className="text-white ml-1 font-semibold">{relateCount}</span>
           </button>
 
-          {/* 🌸 Encouraged Me */}
+          {/* ✨ Inspiring */}
           <button
             type="button"
             onClick={() => onReact(post.id, 'encouraged')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all cursor-pointer hidden sm:flex ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[13px] transition-all cursor-pointer ${
               isEncouraged
-                ? 'bg-pink-500/20 text-pink-300 border-pink-500/40'
-                : 'bg-white/5 border-transparent text-white/70 hover:bg-white/10 hover:text-white'
+                ? 'bg-yellow-500/20 border-transparent text-white'
+                : 'bg-[#20202F] border border-yellow-500/20 hover:border-yellow-500/40'
             }`}
-            title="Encouraged Me"
+            title="Inspiring"
           >
-            <span className="text-sm">🌸</span>
-            <span>{post.reactions.encouraged || 0}</span>
+            <span className="text-[14px]">✨</span> 
+            <span className="text-yellow-400 font-medium">Inspiring</span> 
+            <span className="text-white ml-1 font-semibold">{encouragedCount}</span>
           </button>
 
           {/* 🙏 Thank You */}
           <button
             type="button"
             onClick={() => onReact(post.id, 'thank_you')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all cursor-pointer hidden sm:flex ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[13px] transition-all cursor-pointer hidden sm:flex ${
               isThankYou
-                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                : 'bg-white/5 border-transparent text-white/70 hover:bg-white/10 hover:text-white'
+                ? 'bg-purple-500/20 border-transparent text-white'
+                : 'bg-[#221C3D] border border-purple-500/20 hover:border-purple-500/40'
             }`}
             title="Thank You"
           >
-            <span className="text-sm">🙏</span>
-            <span>{post.reactions.thank_you || 0}</span>
+            <span className="text-[14px]">🙏</span> 
+            <span className="text-[#B79CFF] font-medium">Thank You</span> 
+            <span className="text-white ml-1 font-semibold">{thankYouCount}</span>
           </button>
 
-        </div>
+        <div className="flex-1" />
 
-        {/* Right Bookmark & Share */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => onSave(post.id)}
-            className={`p-2 rounded-xl transition-colors cursor-pointer ${
-              post.isSaved ? 'text-[#B79CFF] bg-[#B79CFF]/15' : 'text-white/50 hover:text-white hover:bg-white/5'
-            }`}
-            title="Save for Later"
-          >
-            <Bookmark className={`w-4 h-4 ${post.isSaved ? 'fill-[#B79CFF]' : ''}`} />
-          </button>
-        </div>
+        {/* Right Bookmark */}
+        <button
+          type="button"
+          onClick={() => onSave(post.id)}
+          className={`p-2 rounded-full transition-all cursor-pointer ${
+            post.isSaved
+              ? 'text-[#FDE68A]'
+              : 'text-white/40 hover:text-white'
+          }`}
+          title="Save for Later"
+        >
+          <Bookmark className={`w-5 h-5 ${post.isSaved ? 'fill-[#FDE68A]' : ''}`} />
+        </button>
+      </div>
 
+      {/* 4. Footer */}
+      <div className="pt-4 border-t border-white/5 flex items-center justify-between text-[13px] font-medium">
+        <button
+          onClick={() => setShowComments(!showComments)}
+          className="flex items-center gap-2 text-white/50 hover:text-white transition-colors cursor-pointer"
+        >
+          <MessageSquare className="w-4 h-4" />
+          <span>{post.commentsCount || 0} Comments</span>
+        </button>
+
+        <button
+          className="flex items-center gap-2 text-white/50 hover:text-white transition-colors cursor-pointer"
+          onClick={handleShare}
+        >
+          <Share2 className="w-4 h-4" />
+          <span>Share</span>
+        </button>
       </div>
 
       {/* Nested Comments Drawer */}
       {showComments && (
-        <CommentSection
-          postId={post.id}
-          comments={post.comments || []}
-          userNickname={userNickname}
-          userAvatar={userAvatar}
-          onAddComment={onAddComment}
-        />
+        <div className="mt-4 pt-4 border-t border-white/5">
+          <CommentSection
+            postId={post.id}
+            comments={post.comments || []}
+            userNickname={userNickname}
+            userAvatar={userAvatar}
+            onAddComment={onAddComment}
+          />
+        </div>
       )}
 
     </div>

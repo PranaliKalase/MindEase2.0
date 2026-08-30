@@ -92,44 +92,44 @@ export const CommunitySidebar: React.FC<CommunitySidebarProps> = ({
     <aside className="w-full space-y-6">
       
       {/* Primary Navigation Hub */}
-      <div className="bg-[#182235] border border-white/10 rounded-3xl p-4 shadow-xl shadow-[#8A5CFF]/5">
+      <div className="bg-transparent border-none p-0 space-y-4">
         <nav className="space-y-1">
           <button
             type="button"
             onClick={() => onSelectView('feed')}
-            className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+            className={`w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-[14px] font-medium transition-all cursor-pointer ${
               activeView === 'feed'
-                ? 'bg-gradient-to-r from-[#8A5CFF]/30 to-[#3A2E7A]/40 text-white border border-[#B79CFF]/40 shadow-lg shadow-[#8A5CFF]/10'
-                : 'text-white/70 hover:text-white hover:bg-white/5 border border-transparent'
+                ? 'bg-[#2A2440] text-white font-bold shadow-sm'
+                : 'text-white/70 hover:text-white hover:bg-white/5'
             }`}
           >
-            <Home className="w-4 h-4 text-[#7DD3FC]" />
+            <Home className={`w-5 h-5 ${activeView === 'feed' ? 'text-[#7DD3FC]' : 'text-[#7DD3FC]/80'}`} />
             <span>Home Feed</span>
           </button>
 
           <button
             type="button"
             onClick={() => onSelectView('explore')}
-            className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+            className={`w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-[14px] font-medium transition-all cursor-pointer ${
               activeView === 'explore'
-                ? 'bg-gradient-to-r from-[#8A5CFF]/30 to-[#3A2E7A]/40 text-white border border-[#B79CFF]/40 shadow-lg shadow-[#8A5CFF]/10'
-                : 'text-white/70 hover:text-white hover:bg-white/5 border border-transparent'
+                ? 'bg-[#2A2440] text-white font-bold shadow-sm'
+                : 'text-white/70 hover:text-white hover:bg-white/5'
             }`}
           >
-            <Compass className="w-4 h-4 text-[#6EE7B7]" />
+            <Compass className={`w-5 h-5 ${activeView === 'explore' ? 'text-[#6EE7B7]' : 'text-[#6EE7B7]/80'}`} />
             <span>Explore</span>
           </button>
 
           <button
             type="button"
             onClick={() => onSelectView('create')}
-            className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+            className={`w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-[14px] font-medium transition-all cursor-pointer ${
               activeView === 'create'
-                ? 'bg-gradient-to-r from-[#8A5CFF]/30 to-[#3A2E7A]/40 text-white border border-[#B79CFF]/40 shadow-lg shadow-[#8A5CFF]/10'
-                : 'text-white/70 hover:text-white hover:bg-white/5 border border-transparent'
+                ? 'bg-[#2A2440] text-white font-bold shadow-sm'
+                : 'text-white/70 hover:text-white hover:bg-white/5'
             }`}
           >
-            <Edit3 className="w-4 h-4 text-[#FDE68A]" />
+            <Edit3 className={`w-5 h-5 ${activeView === 'create' ? 'text-[#FDE68A]' : 'text-[#FDE68A]/80'}`} />
             <span>Create Post</span>
           </button>
         </nav>
@@ -152,10 +152,10 @@ export const CommunitySidebar: React.FC<CommunitySidebarProps> = ({
                   key={club.id}
                   type="button"
                   onClick={() => onSelectView(club.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-2xl text-xs transition-all group cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] transition-all group cursor-pointer ${
                     isActive
-                      ? 'bg-[#B79CFF]/20 text-white border border-[#B79CFF]/40 font-semibold'
-                      : 'text-white/80 hover:text-white hover:bg-white/5 border border-transparent'
+                      ? 'bg-[#221C3D] text-white font-semibold border border-purple-500/20 shadow-[inset_0_0_12px_rgba(138,92,255,0.1)]'
+                      : 'text-white/80 hover:text-white hover:bg-white/5'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -177,7 +177,7 @@ export const CommunitySidebar: React.FC<CommunitySidebarProps> = ({
           <button
             type="button"
             onClick={onOpenDiscoverClubs}
-            className="w-full flex items-center justify-center gap-1.5 py-2 mt-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-[#B79CFF] font-medium transition-colors cursor-pointer"
+            className="w-full flex items-center justify-center gap-1.5 py-2 mt-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-[#B79CFF] font-medium transition-colors cursor-pointer"
           >
             <PlusCircle className="w-3.5 h-3.5" />
             <span>Discover More Clubs</span>
@@ -197,10 +197,10 @@ export const CommunitySidebar: React.FC<CommunitySidebarProps> = ({
                 key={item.id}
                 type="button"
                 onClick={() => onSelectView(item.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-xs font-medium transition-all cursor-pointer ${
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-white/15 text-white border border-white/20'
-                    : 'text-white/60 hover:text-white hover:bg-white/5 border border-transparent'
+                    ? 'bg-[#221C3D] text-white font-semibold border border-purple-500/20 shadow-[inset_0_0_12px_rgba(138,92,255,0.1)]'
+                    : 'text-white/60 hover:text-white hover:bg-white/5'
                 }`}
               >
                 <Icon className="w-4 h-4 text-white/50 group-hover:text-white" />
@@ -212,32 +212,22 @@ export const CommunitySidebar: React.FC<CommunitySidebarProps> = ({
       </div>
 
       {/* Compact User Card at Bottom */}
-      <div className="bg-[#182235] border border-white/10 rounded-3xl p-4 shadow-xl shadow-[#8A5CFF]/5 flex items-center justify-between gap-3">
+      <div className="bg-[#181A2A]/40 border border-white/5 rounded-2xl p-3 flex items-center justify-between gap-3 mt-4 hover:bg-white/5 transition-colors cursor-pointer group">
         <div className="flex items-center gap-3 min-w-0">
           <img
             src={userAvatar}
             alt={userNickname}
-            className="w-10 h-10 rounded-full object-cover border border-[#B79CFF]/40 shrink-0"
+            className="w-10 h-10 rounded-full object-cover border border-white/10 shrink-0"
           />
-          <div className="min-w-0">
-            <div className="text-xs font-bold text-white truncate">{userNickname}</div>
-            <div className="text-[10px] text-white/50 flex items-center gap-1">
-              <span>😊 Mood:</span>
-              <span className="text-[#6EE7B7] font-medium">{userMood}</span>
+          <div className="min-w-0 flex flex-col justify-center">
+            <div className="text-[13px] font-semibold text-white/90 truncate">Pranali Kalase</div>
+            <div className="text-[11px] text-white/50 flex items-center gap-1.5 mt-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+              <span>Mood: {userMood}</span>
             </div>
           </div>
         </div>
-
-        {onOpenQuickJournal && (
-          <button
-            type="button"
-            onClick={onOpenQuickJournal}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-[#B79CFF] hover:text-white transition-colors cursor-pointer shrink-0"
-            title="Quick Journal Entry"
-          >
-            <FileText className="w-4 h-4" />
-          </button>
-        )}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/30 group-hover:text-white/60 transition-colors shrink-0 mr-1"><path d="m6 9 6 6 6-6"/></svg>
       </div>
 
     </aside>

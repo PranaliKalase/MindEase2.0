@@ -71,6 +71,9 @@ export const DashboardPage: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [selectedClub, setSelectedClub] = useState<string | null>(null);
   const [selectedRecommendation, setSelectedRecommendation] = useState<string | null>(null);
+  
+  // Dashboard Community Highlights
+  const [dashboardPosts, setDashboardPosts] = useState<Array<{ id: string, author: string, content: string, timeAgo: string, topic: string }>>([]);
 
   // Chat State inside AI Companion
   const [chatMessage, setChatMessage] = useState('');
@@ -178,7 +181,9 @@ export const DashboardPage: React.FC = () => {
           moodRes,
           latestJournalRes,
           latestGratitudeRes,
-          latestMoodRes
+          latestMoodRes,
+          latestCommunityPostRes,
+          globalCommunityPostsRes
         ] = await Promise.all([
           supabase.from('profiles').select('full_name, avatar').eq('id', user.id).maybeSingle(),
           supabase.from('journals').select('created_at', { count: 'exact' }).eq('user_id', user.id),
@@ -186,7 +191,9 @@ export const DashboardPage: React.FC = () => {
           supabase.from('moods').select('mood, created_at').eq('user_id', user.id).eq('date', todayDateStr).maybeSingle(),
           supabase.from('journals').select('title, created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
           supabase.from('gratitude_posts').select('content, created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
-          supabase.from('moods').select('mood, created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle()
+          supabase.from('moods').select('mood, created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+          supabase.from('community_posts').select('content, created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+          supabase.from('community_posts').select('id, content, topic_tag, created_at, is_anonymous, profiles(nickname)').eq('ai_status', 'published').order('created_at', { ascending: false }).limit(3)
         ]);
 
         // Process Profile
@@ -251,8 +258,32 @@ export const DashboardPage: React.FC = () => {
           });
         }
 
+        if (latestCommunityPostRes.data) {
+          liveActivities.push({
+            id: 'community-act',
+            title: 'Community Post Published',
+            subtitle: latestCommunityPostRes.data.content || 'Shared a post with the community',
+            timeAgo: formatTimeAgo(latestCommunityPostRes.data.created_at),
+            icon: '🌍'
+          });
+        }
+
         if (liveActivities.length > 0) {
+          // Sort liveActivities by time (newest first)
+          // Simple sort relying on the assumption that they happened recently
           setRecentActivities(liveActivities);
+        }
+
+        // Process Global Community Highlights
+        if (globalCommunityPostsRes.data) {
+          const formattedPosts = globalCommunityPostsRes.data.map((post: any) => ({
+            id: post.id,
+            author: post.is_anonymous ? 'Anonymous' : (post.profiles?.nickname || 'Community Member'),
+            content: post.content,
+            topic: post.topic_tag,
+            timeAgo: formatTimeAgo(post.created_at)
+          }));
+          setDashboardPosts(formattedPosts);
         }
       } catch (err) {
         console.error('Error fetching Supabase metrics concurrently:', err);
@@ -984,6 +1015,52 @@ export const DashboardPage: React.FC = () => {
                 );
               })}
             </div>
+          </div>
+
+          {/* ========================================================================= */}
+          {/* BOTTOM ROW 3: COMMUNITY HIGHLIGHTS */}
+          {/* ========================================================================= */}
+          <div className="space-y-4 pt-2 pb-8">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold font-serif-heading text-white flex items-center gap-2">
+                <Users className="w-5 h-5 text-[#B79CFF]" />
+                Community Highlights
+              </h3>
+              <button
+                onClick={() => setActiveTab('clubs')}
+                className="text-xs font-semibold text-[#B79CFF] hover:text-white transition-colors cursor-pointer flex items-center gap-1"
+              >
+                <span>Go to Community</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {dashboardPosts.length === 0 ? (
+              <div className="glass-card p-6 rounded-2xl bg-[#0F1535]/70 border border-white/10 text-center">
+                <p className="text-sm text-white/50">No recent community posts to display.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {dashboardPosts.map((post) => (
+                  <div key={post.id} className="glass-card p-5 rounded-2xl bg-[#0F1535]/70 border border-white/10 hover:border-[#8A5CFF]/30 transition-all flex flex-col justify-between group cursor-pointer" onClick={() => setActiveTab('clubs')}>
+                    <div>
+                      <div className="flex items-center justify-between mb-3 text-xs">
+                        <span className="font-semibold text-white/90">{post.author}</span>
+                        <span className="text-white/40">{post.timeAgo}</span>
+                      </div>
+                      <p className="text-sm text-white/80 line-clamp-3 leading-relaxed mb-4 font-sans">
+                        {post.content}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 mt-auto">
+                      <span className="bg-[#B79CFF]/15 text-[#B79CFF] px-2.5 py-0.5 rounded-full border border-[#B79CFF]/30 text-[10px] font-medium">
+                        #{post.topic}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
         </main>

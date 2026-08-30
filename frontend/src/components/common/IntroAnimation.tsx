@@ -52,7 +52,7 @@ export const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) =>
     >
       <video
         ref={videoRef}
-        src="\assets\videos\introanimation.mp4"
+        src="\assets\videos\introanimation1.mp4"
         autoPlay
         muted
         playsInline

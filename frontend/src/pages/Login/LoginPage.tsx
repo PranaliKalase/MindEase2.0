@@ -142,11 +142,35 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialMode = 'login' }) =
     }
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     setErrorMessage(null);
     setSuccessMessage(null);
-    setShowCustomGoogleForm(false);
-    setGoogleModalOpen(true);
+    setIsGoogleSigningIn(true);
+    
+    try {
+      const res = await googleLogin();
+      
+      if (res?.error) {
+        setIsGoogleSigningIn(false);
+        setErrorMessage(res.message || res.error.message || 'Failed to sign in with Google.');
+      } else if (res?.user && res?.session) {
+        // Demo mode (no Supabase config): googleLogin returns a fake session
+        setTimeout(() => {
+          setIsGoogleSigningIn(false);
+          setSuccessMessage(`Signed in securely! Entering your MindEase Sanctuary...`);
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 800);
+        }, 500);
+      } else {
+        // Real OAuth mode: The browser is actively redirecting to Google's consent screen.
+        // Keep the loading spinner active.
+        setSuccessMessage('Redirecting to Google securely...');
+      }
+    } catch (err: any) {
+      setIsGoogleSigningIn(false);
+      setErrorMessage(err.message || 'An error occurred during Google sign in.');
+    }
   };
 
   const handleSelectGoogleAccount = async (accountEmail: string, accountName: string) => {

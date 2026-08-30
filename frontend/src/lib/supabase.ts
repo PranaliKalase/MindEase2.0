@@ -7,19 +7,14 @@ export const isSupabaseConfigured = (): boolean => {
   if (!rawUrl || !rawKey) return false;
   if (
     rawUrl.includes('your-project') ||
-    rawUrl.includes('placeholder') ||
-    rawUrl.includes('shxsqqyjwimzbvijyuxe')
+    rawUrl.includes('placeholder')
   ) {
     return false;
   }
   if (
     rawKey.includes('your-anon-key') ||
-    rawKey.includes('placeholder') ||
-    rawKey.startsWith('sb_publishable_d941')
+    rawKey.includes('placeholder')
   ) {
-    return false;
-  }
-  if (!rawKey.startsWith('eyJ')) {
     return false;
   }
   return true;
