@@ -1,25 +1,7 @@
-# COMMUNITY - DATABASE
+# 🗄️ Database Context
 
-## Purpose
+Refer to master documentation at [docs/community/database.md](file:///c:/Users/sansk/OneDrive/Documents/Desktop/MindEase2.0/MindEase2.0/docs/community/database.md).
 
-To be defined
-
-## Scope
-
-To be defined
-
-## Main Content
-
-To be defined
-
-## Related Files
-
-To be defined
-
-## Future Improvements
-
-To be defined
-
-## Last Updated
-
-2026-08-02
+Covers:
+- ER Diagram and table definitions (`community_posts`, `post_reactions`, `comments`, `clubs`, `club_memberships`).
+- Supabase SQL schema, constraints, and indexes.

@@ -18,7 +18,7 @@ export interface AuthContextType {
   login: (email: string, password: string) => Promise<AuthResponse>;
   register: (email: string, password: string, fullName: string) => Promise<AuthResponse>;
   logout: () => Promise<{ error: Error | null }>;
-  googleLogin: () => Promise<AuthResponse>;
+  googleLogin: (googleEmail?: string, googleName?: string) => Promise<AuthResponse>;
   forgotPassword: (email: string) => Promise<AuthResponse>;
   updateProfile: (data: { full_name?: string; avatar?: string }) => Promise<{ error: Error | null }>;
   // Aliases for backwards compatibility
@@ -37,6 +37,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Helper for automatic profile creation
   const ensureProfileExists = async (currentUser: User) => {
+    if (!currentUser || currentUser.id.startsWith('demo-')) return;
     try {
       const fullName = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || '';
       const avatar = currentUser.user_metadata?.avatar || currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture || '';
@@ -67,10 +68,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (isMounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          if (session?.user) {
-            await ensureProfileExists(session.user);
+          if (session) {
+            setSession(session);
+            setUser(session.user ?? null);
+            if (session.user) {
+              await ensureProfileExists(session.user);
+            }
+          } else {
+            // Check demo session backup
+            const savedDemo = localStorage.getItem('mindease_demo_session');
+            if (savedDemo) {
+              try {
+                const parsed = JSON.parse(savedDemo);
+                if (parsed?.user && parsed?.session) {
+                  setUser(parsed.user);
+                  setSession(parsed.session);
+                }
+              } catch {}
+            }
           }
         }
       } catch (err) {
@@ -88,8 +103,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         if (isMounted) {
-          setSession(currentSession);
-          setUser(currentSession?.user ?? null);
+          if (currentSession) {
+            setSession(currentSession);
+            setUser(currentSession.user ?? null);
+          }
           setLoading(false);
         }
 
@@ -111,6 +128,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (res.user && res.session) {
       setUser(res.user);
       setSession(res.session);
+      if (res.user.id.startsWith('demo-')) {
+        localStorage.setItem('mindease_demo_session', JSON.stringify({ user: res.user, session: res.session }));
+      }
     }
     return res;
   };
@@ -120,6 +140,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (res.user && res.session) {
       setUser(res.user);
       setSession(res.session);
+      if (res.user.id.startsWith('demo-')) {
+        localStorage.setItem('mindease_demo_session', JSON.stringify({ user: res.user, session: res.session }));
+      }
     }
     return res;
   };
@@ -128,11 +151,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const res = await signOutUser();
     setUser(null);
     setSession(null);
+    localStorage.removeItem('mindease_demo_session');
     return res;
   };
 
-  const googleLogin = async () => {
-    return await signInWithGoogle();
+  const googleLogin = async (googleEmail?: string, googleName?: string) => {
+    const res = await signInWithGoogle(googleEmail, googleName);
+    if (res.user && res.session) {
+      setUser(res.user);
+      setSession(res.session);
+      if (res.user.id.startsWith('demo-')) {
+        localStorage.setItem('mindease_demo_session', JSON.stringify({ user: res.user, session: res.session }));
+      }
+    }
+    return res;
   };
 
   const forgotPassword = async (email: string) => {

@@ -22,7 +22,7 @@ export const usePageTransition = () => React.useContext(TransitionContext);
 
 export const AppRoutes: React.FC = () => {
   const navigate = useNavigate();
-  const [isTransitioning, setIsTransitioning] = React.useState(false);
+  const [isTransitioning] = React.useState(false);
 
   const navigateToAuth = (mode: 'login' | 'signup' = 'login') => {
     navigate(mode === 'signup' ? '/register' : '/login');

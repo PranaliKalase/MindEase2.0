@@ -1,25 +1,7 @@
-# COMMUNITY - API
+# 🔌 API Context
 
-## Purpose
+Refer to master documentation at [docs/community/api.md](file:///c:/Users/sansk/OneDrive/Documents/Desktop/MindEase2.0/MindEase2.0/docs/community/api.md).
 
-To be defined
-
-## Scope
-
-To be defined
-
-## Main Content
-
-To be defined
-
-## Related Files
-
-To be defined
-
-## Future Improvements
-
-To be defined
-
-## Last Updated
-
-2026-08-02
+Covers:
+- REST API endpoint contracts.
+- Supabase Realtime WebSocket subscription code examples.

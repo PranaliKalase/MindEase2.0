@@ -35,6 +35,7 @@ import {
   Target
 } from 'lucide-react';
 import { ParticleCanvas } from '../../components/common/ParticleCanvas';
+import { CommunityModule } from '../../components/community/CommunityModule';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
 
@@ -465,6 +466,19 @@ export const DashboardPage: React.FC = () => {
     { id: 'analytics', label: 'Wellness Analytics', icon: BarChart2 },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
+
+  if (activeTab === 'clubs') {
+    return (
+      <CommunityModule
+        userNickname={profileName}
+        userAvatar={profileAvatar}
+        onNavigateToTab={(tab) => {
+          if (tab === 'feed' || tab === 'clubs') setActiveTab('clubs');
+          else setActiveTab(tab as any);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="relative min-h-screen bg-[#0B1026] text-white selection:bg-[#8A5CFF] selection:text-white font-sans overflow-x-hidden">
